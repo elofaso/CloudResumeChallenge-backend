@@ -7,60 +7,40 @@ AWS_REGION = os.getenv('AWS_REGION', 'us-east-1')
 TABLE_NAME = os.environ['TABLE_NAME']
 
 def lambda_handler(event, context):
-    """Sample pure Lambda function
-
-    Parameters
-    ----------
-    event: dict, required
-        API Gateway Lambda Proxy Input Format
-
-        Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
-
-    context: object, required
-        Lambda Context runtime methods and attributes
-
-        Context doc: https://docs.aws.amazon.com/lambda/latest/dg/python-context-object.html
-
-    Returns
-    ------
-    API Gateway Lambda Proxy Output Format: dict
-
-        Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
-    """
-
-    # try:
-    #     ip = requests.get("http://checkip.amazonaws.com/")
-    # except requests.RequestException as e:
-    #     # Send some context about this error to Lambda Logs
-    #     print(e)
-
-    #     raise e
-    
     db = boto3.resource('dynamodb', region_name=AWS_REGION)
     table = db.Table(TABLE_NAME)
+    
+    visit_count = None
+
     try:
-        response = table.get_item(
+        response = table.get_item(Key={
             Key={
                 'Id': 1
             }            
         )
+        old_visit_count = int(response['Item']['visit_count'])
     except Exception:
         table.put_item(
             Item={
                     'Id':  1,
-                    'visit_count': 1
+                    'visit_count': 0
             }
         )
-    try:
-        item = int(response['Item']['visit_count'])
-    except Exception:
-        table.put_item(
-            Item={
-                    'Id':  1,
-                    'visit_count': 1
-            }
-        )   
+        old_visit_count = 0
+        
+    new_visit_count = old_visit_count + 1
+    
+    table.update_item(
+        Key={'Id': 1},
+        UpdateExpression="set visit_count= :vc",
+         ExpressionAttributeValues={
+            ':vc' : new_visit_count
+        },
+    )
+    
     return {
         "statusCode": 200,
-        "body": json.dumps(item)
+        "body": json.dumps(new_visit_count)
     }
+    
+    
