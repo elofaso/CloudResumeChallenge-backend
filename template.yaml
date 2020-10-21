@@ -25,7 +25,8 @@ Resources:
       EndpointConfiguration: REGIONAL
       TracingEnabled: true
       StageName: prod
-  VisitCounter: Type: AWS::Serverless::Function
+  VisitCounter:
+    Type: AWS::Serverless::Function
     Properties:
       Handler: app.lambda_handler
       Runtime: python3.8
