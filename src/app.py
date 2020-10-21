@@ -41,12 +41,10 @@ def lambda_handler(event, context):
     response = table.get_item(
         Key={
             'Id': 1
-        },            
-        'ConsistentRead': True`
+        }            
     )
     item = int(response['Item']['visit_count'])
-    json_string = json.dumps({'visit_count':int(item)})
     return {
         "statusCode": 200,
-        "body": json_string
+        "body": json_dumps(item)
     }

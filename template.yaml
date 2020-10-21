@@ -21,7 +21,7 @@ Resources:
         AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
         AllowOrigin: !Ref CorsOrigin
         MaxAge: "'3600'"
-        AllowMethods: "'OPTIONS,POST'"
+        AllowMethods: "'OPTIONS,GET,POST'"
       EndpointConfiguration: REGIONAL
       TracingEnabled: true
       StageName: prod
@@ -44,7 +44,7 @@ Resources:
           Type: Api
           Properties:
             Path: /count
-            Method: POST 
+            Method: any 
             RestApiId: !Ref CounterApi
   DynamoDBTable:
     Type: AWS::DynamoDB::Table
