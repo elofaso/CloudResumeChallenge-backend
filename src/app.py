@@ -38,13 +38,29 @@ def lambda_handler(event, context):
     
     db = boto3.resource('dynamodb', region_name=AWS_REGION)
     table = db.Table(TABLE_NAME)
-    response = table.get_item(
-        Key={
-            'Id': 1
-        }            
-    )
-    item = int(response['Item']['visit_count'])
+    try:
+        response = table.get_item(
+            Key={
+                'Id': 1
+            }            
+        )
+    except Exception:
+        table.put_item(
+            Item={
+                    'Id':  1,
+                    'visit_count': 1
+            }
+        )
+    try:
+        item = int(response['Item']['visit_count'])
+    except Exception:
+        table.put_item(
+            Item={
+                    'Id':  1,
+                    'visit_count': 1
+            }
+        )   
     return {
         "statusCode": 200,
-        "body": json_dumps(item)
+        "body": json.dumps(item)
     }
