@@ -46,5 +46,5 @@ def lambda_handler(event, context):
     # Return success status code and value of new_visit_count.
     return {
         "statusCode": 200,
-        "body": json.dumps(new_visit_count)
+        "body": json.dumps({"visit_count": new_visit_count})
     }
