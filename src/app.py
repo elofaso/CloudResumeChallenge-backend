@@ -48,7 +48,7 @@ def lambda_handler(event, context):
         "statusCode": 200,
         'headers': {
             'Access-Control-Allow-Headers': 'Content-Type',
-            'Access-Control-Allow-Origin': 'https://lofaso.xyz',
+            'Access-Control-Allow-Origin': 'http://lofaso.xyz',
             'Access-Control-Allow-Methods': 'OPTIONS,GET'
         },    
         "body": json.dumps(new_visit_count)
