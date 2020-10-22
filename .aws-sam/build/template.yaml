@@ -1,0 +1,77 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Parameters:
+  TableName:
+    Type: String
+    Description: (Required) The name of the new DynamoDB table you want to create
+      and save to. Minimum 3 characters
+    MinLength: 3
+    MaxLength: 50
+    AllowedPattern: ^[A-Za-z_]+$
+    ConstraintDescription: Required. Can be characters and underscore only. No numbers
+      or special characters allowed.
+  CorsOrigin:
+    Type: String
+    Default: '''*'''
+    Description: (Optional) Cross-origin resource sharing (CORS) Origin. You can specify
+      a single origin, all "*" or leave empty and no CORS will be applied.
+    MaxLength: 250
+Resources:
+  CounterApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Cors:
+        AllowHeaders: '''Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'''
+        AllowOrigin:
+          Ref: CorsOrigin
+        MaxAge: '''3600'''
+        AllowMethods: '''OPTIONS,GET,POST'''
+      EndpointConfiguration: REGIONAL
+      TracingEnabled: true
+      StageName: prod
+  VisitCounter:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      CodeUri: VisitCounter
+      Environment:
+        Variables:
+          TABLE_NAME:
+            Ref: TableName
+          CORS_ORIGIN:
+            Ref: CorsOrigin
+          PRIMARY_KEY: Id
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: TableName
+      Events:
+        CounterApi:
+          Type: Api
+          Properties:
+            Path: /count
+            Method: GET
+            RestApiId:
+              Ref: CounterApi
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName:
+        Ref: TableName
+      AttributeDefinitions:
+      - AttributeName: Id
+        AttributeType: N
+      KeySchema:
+      - AttributeName: Id
+        KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+Outputs:
+  ApiUrl:
+    Value:
+      Fn::Sub: https://${CounterApi}.execute-api.${AWS::Region}.amazonaws.com/prod/save
+    Description: The URL of the API Gateway you invoke to save to your DynamoDB Table.
+  DynamoDBTable:
+    Value:
+      Ref: TableName
+    Description: The name of your DynamoDB Table
